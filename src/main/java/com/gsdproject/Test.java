@@ -39,62 +39,21 @@ public class Test {
 
     }
 
-    public static void main1(String[] args) throws Exception {
+    public static void main11(String[] args) throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
 
         Collection<Default_Edge> edges = graphFeatures.getEdgeHashMap().values();
         int i=0;
         for (Default_Edge edge1:edges) {
             i++;
-            for (Default_Edge edge2: edges) {
-                if (edge1.getId()!=edge2.getId()) {
-                    if(edge1.getV()==edge2.getU()){
-                        System.out.println(edge1 +" outgoing edge is "+ edge2);
-                    }
-                    if(edge1.getV()==edge2.getV()){
-                        System.out.println(edge1 +" incoming edge is "+ edge2);
-                    }
-                }
-            }
-            if(i==1){
-                break;
+            if(edge1.getSlope()<-1){
+                System.out.println(edge1);
             }
 
         }
     }
 
-    public static void main(String[] args) {
-        double x1 = 0.0;
-        double y1 = 0.0;
-        double x2 = 0.0;
-        double y2 = 1.0;
-        double x3 = 0.0;
-        double y3 = 1.0;
-        double x4 = -2.0;
-        double y4 = 4.0;
-
-        double vector1x = x2 - x1;
-        double vector1y = y2 - y1;
-
-        // İkinci kenarın vektörünü hesaplayın
-        double vector2x = x4 - x3;
-        double vector2y = y4 - y3;
-
-        // İki vektör arasındaki açıyı hesaplayın
-        double angle = Math.toDegrees(Math.atan2(vector2y, vector2x) - Math.atan2(vector1y, vector1x));
-
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        // Saatin tersi yönünde açıyı bulmak için 360 dereceden çıkarın
-        double counterClockwiseAngle = 360 - angle -340;
-        if (counterClockwiseAngle < 0) {
-            counterClockwiseAngle += 360;
-        }
-        System.out.println(counterClockwiseAngle);
-    }
-    public static void main11(String[] args) throws Exception {
+    public static void main2(String[] args) throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
         HashMap<String, CreatedEdge> createdEdgesHashMap = graphFeatures.getCreatedEdgesHashMap();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("directionalInfo.txt"))) {
@@ -108,8 +67,8 @@ public class Test {
                 Coordinate p2 = getMidPoint(out);
 
                 Double wLength  = inc.getDistance();
-                Double wSlope = Decider.slopeDecider(inc.getSlope());
-                Double wMaxSpeed = Decider.maxSpeedDecider(inc.getMaxSpeed());
+                Double wSlope = inc.getSlope();
+                Double wMaxSpeed = inc.getMaxSpeed();
                 Double wTurningCost = Decider.turningCostDecider(createdEdge.getTurningCost());
                 Double wGreenary = Decider.greeneryDecider(inc.getGreenness());
 

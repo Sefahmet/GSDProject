@@ -2,6 +2,7 @@ package com.gsdproject.Service;
 
 
 public class Decider {
+    private static Double k = 12.0;
     public static Double maxSpeedDecider(Double maxSpeed){
         if (maxSpeed<10){
             return 0.1;
@@ -36,8 +37,8 @@ public class Decider {
         if(greenary<=0){
             return 1.0;
         }else {
-            double f = 1 - Math.exp( -3* greenary/555);
-            double normalizationValue = 1 - Math.exp(-3);
+            double f = Math.exp( -k* greenary/555)-Math.exp(-k);
+            double normalizationValue = 1 - Math.exp(-k);
             return f/normalizationValue;
         }
     }
