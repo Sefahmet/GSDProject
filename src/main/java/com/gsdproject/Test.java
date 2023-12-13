@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+
 public class Test {
     static final Double resolutionOfGreenary = 5.0;
     static final Double visibilityDistance = 200.0;
@@ -61,7 +62,39 @@ public class Test {
 
         }
     }
-    public static void main(String[] args) throws Exception {
+
+    public static void main(String[] args) {
+        double x1 = 0.0;
+        double y1 = 0.0;
+        double x2 = 0.0;
+        double y2 = 1.0;
+        double x3 = 0.0;
+        double y3 = 1.0;
+        double x4 = -2.0;
+        double y4 = 4.0;
+
+        double vector1x = x2 - x1;
+        double vector1y = y2 - y1;
+
+        // İkinci kenarın vektörünü hesaplayın
+        double vector2x = x4 - x3;
+        double vector2y = y4 - y3;
+
+        // İki vektör arasındaki açıyı hesaplayın
+        double angle = Math.toDegrees(Math.atan2(vector2y, vector2x) - Math.atan2(vector1y, vector1x));
+
+        if (angle < 0) {
+            angle += 360;
+        }
+
+        // Saatin tersi yönünde açıyı bulmak için 360 dereceden çıkarın
+        double counterClockwiseAngle = 360 - angle -340;
+        if (counterClockwiseAngle < 0) {
+            counterClockwiseAngle += 360;
+        }
+        System.out.println(counterClockwiseAngle);
+    }
+    public static void main11(String[] args) throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
         HashMap<String, CreatedEdge> createdEdgesHashMap = graphFeatures.getCreatedEdgesHashMap();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("directionalInfo.txt"))) {

@@ -1,5 +1,6 @@
 package com.gsdproject.Entity;
 
+import com.gsdproject.Model.EdgeCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -139,7 +140,10 @@ public class Default_Edge extends DefaultWeightedEdge {
                 }
 
                 // Saatin tersi yönünde açıyı bulmak için 360 dereceden çıkarın
-                double counterClockwiseAngle = 360 - angle;
+                double counterClockwiseAngle = 360 - angle - EdgeCreator.angleMaxForLeft;
+                if (counterClockwiseAngle < 0) {
+                        counterClockwiseAngle += 360;
+                }
                 return counterClockwiseAngle;
         }
 

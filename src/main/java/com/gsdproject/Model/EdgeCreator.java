@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class EdgeCreator {
+    public static double angleMaxForLeft = 340;
+    public static double angleMinForLeft = 180;
     public static HashMap<String,CreatedEdge>  isItTurnLeft(Default_Edge incoming, List<Default_Edge> outgoings,
                                     List<Default_Edge> incomings,HashMap<String,CreatedEdge> createdEdgeHashMap) throws Exception {
         // Check the points degree are 2(in non-directed case)
@@ -47,7 +49,7 @@ public class EdgeCreator {
 
             for(Default_Edge outgoingEdge:outgoingOrderedAngle.keySet()){
                 Double angle = outgoingOrderedAngle.get(outgoingEdge);
-                if (180<angle & angle<340 & angle>min_incoming_angle){
+                if (angleMinForLeft<angle & angle<angleMaxForLeft & angle>min_incoming_angle){
                     createdEdgeHashMap =creatEdge(incoming,outgoingEdge,"Left",createdEdgeHashMap);
 
                 }else{
