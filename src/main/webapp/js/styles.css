@@ -1,0 +1,96 @@
+.sliderWrapper {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    width: 30%;
+}
+.slidecontainer {
+    padding: 6px 0 16px 0; /* İstediğiniz boşluk/marjin ayarları */
+    background: rgba(255, 128, 0, 0.2)
+}
+
+.weightsButton {
+    width: 46%;
+    padding: 8px 16px;
+    font-weight: 800;
+    background-color: rgb(251, 187, 0);
+    color: #0a55a1;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.slider {
+    min-width: 100%;
+}
+
+.inputWrapper {
+    text-align: center;
+    font-weight: 800;
+    font-size: 18px;
+}
+@media screen and (max-width: 600px) {
+    .slidecontainer {
+        flex-direction: column;
+    }
+    .sliderWrapper { 
+        width: 46%;
+    }
+    .weightsButton {
+        width: 100%;
+    }
+  }
+
+.slider {
+    width: calc(18% - 10px); /* Slayderları yan yana sığacak genişlikte ayarlayın */
+    -webkit-appearance: none;
+    height: 8px;
+    background: #d3d3d3;
+    outline: none;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider#distanceRange {
+    background: linear-gradient(90deg, rgba(222,196,244,1) 0%, rgba(179,136,215,1) 25%, rgba(130,82,172,1) 50%, rgba(94,50,131,1) 75%, rgba(59,27,87,1) 100%);
+}
+.slider#slopeRange {
+    background: linear-gradient(90deg, rgba(214,255,251,1) 0%, rgba(116,222,211,1) 25%, rgba(64,224,208,1) 50%, rgba(15,185,168,1) 75%, rgba(11,124,112,1) 100%);
+}
+.slider#speedRange {
+    background: linear-gradient(90deg, rgba(241,188,157,1) 0%, rgba(238,160,115,1) 25%, rgba(241,97,14,1) 50%, rgba(217,79,0,1) 75%, rgba(142,53,2,1) 100%);
+}
+.slider#turningCostRange {
+    background: linear-gradient(90deg, rgba(237,178,190,1) 0%, rgba(246,140,161,1) 25%, rgba(251,96,127,1) 50%, rgba(246,26,70,1) 75%, rgba(117,0,23,1) 100%);
+}
+.slider#greenaryRange {
+    background: linear-gradient(90deg, rgba(255,254,223,1) 0%, rgba(249,246,163,1) 25%, rgba(252,247,94,1) 50%, rgba(232,226,48,1) 75%, rgba(170,164,0,1) 100%);
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 45px;
+    height: 45px;
+    background: url('slider-thumb.png') center center no-repeat;
+    background-size: cover;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    width: 50px;
+    height: 50px;
+}
+
+.slider::-moz-range-thumb {
+    width: 150px;
+    height: 150px;
+    background: url('slider-thumb.png') center center no-repeat;
+    background-size: cover;
+    cursor: pointer;
+}
