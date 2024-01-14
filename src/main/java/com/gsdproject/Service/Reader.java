@@ -115,7 +115,7 @@ public class Reader {
         }
         private static void setGreenaryValues(HashMap<String, Default_Edge> edgeHashmap){
         try{
-            File file = new File(path+"/greenary.txt");
+            File file = new File(path+"/greenery.txt");
             BufferedReader reader = new BufferedReader(new FileReader(file));
 
 

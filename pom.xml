@@ -62,6 +62,12 @@
             <artifactId>jts-core</artifactId>
             <version>1.15.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.locationtech.jts.io/jts-io-common -->
+        <dependency>
+            <groupId>org.locationtech.jts.io</groupId>
+            <artifactId>jts-io-common</artifactId>
+            <version>1.19.0</version>
+        </dependency>
 
     </dependencies>
 

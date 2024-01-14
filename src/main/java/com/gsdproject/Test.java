@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.springframework.core.io.ClassPathResource;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -19,7 +20,7 @@ import java.util.*;
 
 
 public class Test {
-    static final Double resolutionOfGreenary = 5.0;
+    static final Double resolutionOfgreenery = 5.0;
     static final Double visibilityDistance = 200.0;
     static final Double visibleAngle = 150.0;
     static final String path;
@@ -39,7 +40,18 @@ public class Test {
 
     }
 
-    public static void main11(String[] args) throws Exception {
+    public static void main1() throws Exception {
+        GeometryFactory geometryFactory = new GeometryFactory();
+        HashMap<String, CreatedEdge> createdEdgeHashMap = GraphFeatures.getInstance().getCreatedEdgesHashMap();
+        for(CreatedEdge createdEdge : createdEdgeHashMap.values()) {
+            Default_Edge inc = createdEdge.getIncomingEdge();
+            Default_Edge out = createdEdge.getOutgoingEdge();
+            Coordinate p1 = getMidPoint(inc);
+            Coordinate p2 = getMidPoint(out);
+            LineString fullLine = geometryFactory.createLineString(new Coordinate[]{p1, p2});
+        }
+    }
+    public static void main11() throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
 
         Collection<Default_Edge> edges = graphFeatures.getEdgeHashMap().values();
@@ -53,48 +65,53 @@ public class Test {
         }
     }
 
-    public static void main2(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
         HashMap<String, CreatedEdge> createdEdgesHashMap = graphFeatures.getCreatedEdgesHashMap();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("directionalInfo.txt"))) {
             writer.write(String.format("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
-                    "x1","y1","x2","y2", "wLength","wSlope","wMaxSpeed","wTurningCost","wGreenary", "justLength","justSlope","justMaxSpeed","justTurningCost","justGreenary","justEqual"));
-
+                     "osmid1","osmid2",
+                     "wLength","wSlope","wMaxSpeed","wTurningCost","wgreenery", "treeCount",
+                    "justLength","justSlope","justMaxSpeed","justTurningCost","justGreenery","justEqual","geometry"));
+            GeometryFactory geometryFactory = new GeometryFactory();
             for(CreatedEdge createdEdge : createdEdgesHashMap.values()) {
                 Default_Edge inc = createdEdge.getIncomingEdge();
                 Default_Edge out = createdEdge.getOutgoingEdge();
                 Coordinate p1 = getMidPoint(inc);
                 Coordinate p2 = getMidPoint(out);
 
+                Long osmid1 = inc.getOsmid();
+                Long osmid2 = inc.getOsmid();
                 Double wLength  = inc.getDistance();
                 Double wSlope = inc.getSlope();
                 Double wMaxSpeed = inc.getMaxSpeed();
                 Double wTurningCost = Decider.turningCostDecider(createdEdge.getTurningCost());
-                Double wGreenary = Decider.greeneryDecider(inc.getGreenness());
+                Double treeCount = inc.getGreenness();
+                Double wgreenery = Decider.greeneryDecider(treeCount);
 
                 Weight weightLength = new Weight(1.0, 0.0, 0.0, 0.0, 0.0);
                 Weight weightSlope = new Weight(0.0, 1.0, 0.0, 0.0, 0.0);
                 Weight weightMaxSpeed = new Weight(0.0, 0.0, 1.0, 0.0, 0.0);
                 Weight weightTurningCost = new Weight(0.0, 0.0, 0.0, 1.0, 0.0);
-                Weight weightGreenary = new Weight(0.0, 0.0, 0.0, 0.0, 1.0);
+                Weight weightgreenery = new Weight(0.0, 0.0, 0.0, 0.0, 1.0);
                 Weight weightEqual = new Weight(1.0, 1.0, 1.0, 1.0, 1.0);
                 Coordinate p3 = getInterPoint4DirectedEdge(p1,p2);
-
+                LineString directedLine = geometryFactory.createLineString(new Coordinate[]{p1, p3});
 
                 Double justLength = Reader.setEdgeWeight(createdEdge, weightLength);
                 Double justSlope = Reader.setEdgeWeight(createdEdge, weightSlope);
                 Double justMaxSpeed = Reader.setEdgeWeight(createdEdge, weightMaxSpeed);
                 Double justTurningCost= Reader.setEdgeWeight(createdEdge, weightTurningCost);
-                Double justGreenary = Reader.setEdgeWeight(createdEdge, weightGreenary);
+                Double justgreenery = Reader.setEdgeWeight(createdEdge, weightgreenery);
                 Double justEqual= Reader.setEdgeWeight(createdEdge, weightEqual);
 
 
 
 
 
-                writer.write(String.format("%f %f %f %f ", p1.x, p1.y, p3.x, p3.y));
-                writer.write(String.format("%f %f %f %f %f ", wLength,wSlope,wMaxSpeed,wTurningCost,wGreenary));
-                writer.write(String.format("%f %f %f %f %f %f\n",justLength,justSlope,justMaxSpeed,justTurningCost,justGreenary,justEqual));
+                writer.write(String.format("%d %d ", osmid1, osmid2));
+                writer.write(String.format("%s %s %s %s %s %s ", wLength,wSlope,wMaxSpeed,wTurningCost,wgreenery,treeCount));
+                writer.write(String.format("%s %s %s %s %s %s %s\n",justLength,justSlope,justMaxSpeed,justTurningCost,justgreenery,justEqual,directedLine.toString()));
 
         }
 
@@ -114,19 +131,44 @@ public class Test {
         return new Coordinate(p1.x+dx,p1.y+dy);
 
     }
+    private static boolean isEdgeInGreenFeatures(LineString lineString, HashMap<String, MultiPolygon> landUse){
+        //'allotments', 'forest', 'grass','meadow', 'nature_reserve', 'orchard', 'park', 'recreation_ground','scrub'
+        if (lineString.intersects(landUse.get("forest"))){
+            return true;
+        }else if(lineString.intersects(landUse.get("meadow"))){
+            return true;
+        }
+        else if(lineString.intersects(landUse.get("nature_reserve"))){
+            return true;
+        } else if(lineString.intersects(landUse.get("park"))){
+            return true;
+        } else if(lineString.intersects(landUse.get("park"))){
+            return true;
+        }
+        return false;
+    }
     private static void treeVisibilityAlgo() throws Exception {
+        HashMap<String, MultiPolygon> landUse = readGreenPolygons();
         STRtree buildings = GreenaryData.getInstance().getBuildings();
         STRtree trees = GreenaryData.getInstance().getTree();
         HashMap<String, Default_Edge> edgeHashmap = GraphFeatures.getInstance().getEdgeHashMap();
         double idx =0.0;
         int size = edgeHashmap.values().size();
         int perc = 0;
+        GeometryFactory geometryFactory = new GeometryFactory();
         for(Default_Edge edge:edgeHashmap.values()){
             idx++;
+            Coordinate startPoint = new Coordinate(edge.getU().getEast(),edge.getU().getNorth());
+            Coordinate endPoint = new Coordinate(edge.getV().getEast(),edge.getV().getNorth());
+            LineString lineString = geometryFactory.createLineString(new Coordinate[]{startPoint, endPoint});
             Double p = idx * 100 / size;
             if(p.intValue()>perc){
                 System.out.println(perc + "% completed");
                 perc+=5;
+            }
+            if(isEdgeInGreenFeatures(lineString,landUse)){
+                edge.setGreenness(9999.0);
+                continue;
             }
             double visibleTreesCount = 0;
             Default_Node u = edge.getU();
@@ -157,9 +199,10 @@ public class Test {
         }
         treeCounterWriter();
     }
+
     private static void treeCounterWriter(){
         try {
-            String fileName = "/greenary.txt";
+            String fileName = "/greeneryWithLast.txt";
             File file = new File(path+fileName);
             HashMap<String, Default_Edge> edgeHashmap = GraphFeatures.getInstance().getEdgeHashMap();
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -330,7 +373,50 @@ public class Test {
             return "Invalid Angle";
         }
     }
+    private static Geometry convertGeoJsonToGeometry(String geoJsonString) {
+        GeoJsonReader reader = new GeoJsonReader();
+        Geometry geometry = null;
+        try {
+            geometry = reader.read(geoJsonString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return geometry;
+    }
+    public static HashMap<String,MultiPolygon> readGreenPolygons() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
 
+        try{
+            String greenFeatures = new String(Files.readAllBytes(Paths.get(path+"/greenFeatures.geojson")));
+            JsonNode jsonNode = objectMapper.readTree(greenFeatures);
+
+            int i = 0;
+            Integer id;
+            STRtree spatialIndex = new STRtree();
+            HashMap<String,MultiPolygon> landUse = new HashMap<>();
+            while (jsonNode.get("features").get(i)!=null){
+                JsonNode feature = jsonNode.get("features").get(i);
+                String type = feature.get("properties").get("fclass").toString().replace("\"","");
+                System.out.println(type);
+                String geom = feature.get("geometry").toString();
+                Geometry geometry = convertGeoJsonToGeometry(geom);
+                MultiPolygon multiPolygon = (MultiPolygon) geometry;
+                landUse.put(type,multiPolygon);
+                i++;
+            }
+
+            return landUse;
+
+        } catch (
+                FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        throw new IOException("There is a problem occurred while creating LandUse HashMap");
+
+
+    }
 
 
 
@@ -340,7 +426,7 @@ public class Test {
         Double x2 = v.getEast();
         Double y2 = v.getNorth();
         Double length = Math.hypot(x2 - x1, y2 - y1);
-        Double val = length / resolutionOfGreenary;
+        Double val = length / resolutionOfgreenery;
         Double slopeAngle = Math.atan2 (y2 - y1 ,x2 - x1);
         Double pointsDistance = length / (val.intValue()+1);
         List<Coordinate> coordinates = new ArrayList<>();
@@ -421,6 +507,24 @@ public class Test {
             int i = 0;
             Integer id;
             STRtree spatialIndex = new STRtree();
+            while (jsonNode.get("features").get(i)!=null){
+                JsonNode feature = jsonNode.get("features").get(i);
+                String coordinates = feature.get("geometry").get("coordinates").toString();
+                String s = coordinates.replaceAll("\\[|\\]", "");
+                String[] coords = s.split(",");
+                Double x = Double.valueOf(coords[0]);
+                Double y = Double.valueOf(coords[1]);
+
+
+                Point tree = geometryFactory.createPoint(new Coordinate(x,y));
+                spatialIndex.insert(tree.getEnvelopeInternal(), tree);
+                i++;
+            }
+
+            treeFile = new String(Files.readAllBytes(Paths.get(path+"/treeOSMex.geojson")));
+            jsonNode = objectMapper.readTree(treeFile);
+
+            i = 0;
             while (jsonNode.get("features").get(i)!=null){
                 JsonNode feature = jsonNode.get("features").get(i);
                 String coordinates = feature.get("geometry").get("coordinates").toString();

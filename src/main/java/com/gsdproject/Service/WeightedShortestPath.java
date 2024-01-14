@@ -9,6 +9,7 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateList;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
 
@@ -30,7 +31,7 @@ public class WeightedShortestPath {
 
         Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary);
         MyDataSingleton myDataSingleton = new MyDataSingleton();
-        if (weight != myDataSingleton.getWeight()){
+        if (!myDataSingleton.getWeight().isSameWeight(weight)){
             myDataSingleton.setWeight(weight);
             myDataSingleton.update();
             GraphFeatures graphFeature = updateGraphFeatures(myDataSingleton.getGraphFeatures(), weight);
@@ -43,6 +44,31 @@ public class WeightedShortestPath {
 
 
         return shortestPath2Coordinate(shoretesPath);
+    }
+    public static List<Coordinate> shortestPathReturnsEdge( double lat1,
+                                                        double lon1,
+                                                        double lat2,
+                                                        double lon2,
+                                                        double wLength,
+                                                        double wSlope,
+                                                        double wMaxSpeed,
+                                                        double wTurnLeft,
+                                                        double wGreenary){
+
+        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary);
+        MyDataSingleton myDataSingleton = new MyDataSingleton();
+        if (!myDataSingleton.getWeight().isSameWeight(weight)){
+            myDataSingleton.getWeight().setInstance(weight);
+            GraphFeatures graphFeature = updateGraphFeatures(myDataSingleton.getGraphFeatures(), weight);
+            myDataSingleton.setGraphFeatures(graphFeature);
+        }
+
+        Coordinate p1 = LatLon2EN(lon1, lat1);
+        Coordinate p2 = LatLon2EN(lon2, lat2);
+        GraphPath<Default_Edge, CreatedEdge> shortestPath = getShortestPath(p1, p2);
+        return shortestPath2CoordinateAndGreenery(shortestPath);
+
+
     }
     public static List<String>  shortestPathServiceOSMID( double lat1,
                                                         double lon1,
@@ -98,6 +124,34 @@ public class WeightedShortestPath {
             return null;
         }
     }
+    private static List<Coordinate> shortestPath2CoordinateAndGreenery(GraphPath<Default_Edge, CreatedEdge> shoretesPath){
+        List<Default_Edge> edges = shoretesPath.getVertexList();
+        List<Coordinate> coordinates = new ArrayList<>();
+        if (edges.size()>1) {
+            Double x;
+            Double y;
+            Coordinate coordinate;
+            for (int i = 1; i < edges.size() - 1; i++) {
+                Default_Edge edge = edges.get(i);
+                x = edge.getU().getEast();
+                y = edge.getU().getNorth();
+                coordinate = EN2LatLon(x, y);
+                coordinate.z = Decider.greeneryDecider(edge.getGreenness());
+                coordinates.add(coordinate);
+
+            }
+            Default_Edge lastEdge = edges.get(coordinates.size() - 2);
+            x = lastEdge.getV().getEast();
+            y = lastEdge.getV().getNorth();
+            coordinate = EN2LatLon(x, y);
+            coordinate.z = Decider.greeneryDecider(lastEdge.getGreenness());
+            coordinates.add(coordinate);
+            return coordinates;
+        }
+        else{
+            return null;
+        }
+    }
     public static GraphPath<Default_Edge, CreatedEdge> getShortestPath(Coordinate startPoint, Coordinate endPoint){
 
         MyDataSingleton myDataSingleton = new MyDataSingleton();
@@ -106,9 +160,9 @@ public class WeightedShortestPath {
         Default_Edge startEdge = new Default_Edge(1000000);
         Default_Edge endEdge   = new Default_Edge(2000000);
         List<DefaultWeightedEdge> temporaryEdges = addTemporaryEdges2Graph(inAndExitEdges, startEdge, endEdge);
-        GraphPath<Default_Edge, CreatedEdge> shortesPath = findShortesPath(startEdge, endEdge);
+        GraphPath<Default_Edge, CreatedEdge> shortestPath = findShortesPath(startEdge, endEdge);
         removeTheTemporaryEdgeFromGraph(temporaryEdges);
-        return shortesPath;
+        return shortestPath;
 
 
     }
@@ -146,8 +200,8 @@ public class WeightedShortestPath {
         }
         for(Default_Edge edge : exitEdges){
             CreatedEdge createdEdge = new CreatedEdge(edge,endEdge);
-            Double weight = 0.0;
-            temporaryEdges.add(addEdge2Graph(createdEdge,Reader.setEdgeWeight(createdEdge)));
+            Double weight = Reader.setEdgeWeight(createdEdge);
+            temporaryEdges.add(addEdge2Graph(createdEdge,weight));
 
         }
         return temporaryEdges;

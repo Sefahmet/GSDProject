@@ -149,7 +149,8 @@ public class Default_Edge extends DefaultWeightedEdge {
 
         @Override
         public String toString() {
-                return id + " "+osmid+" "+roadType+" "+ name +" "+ u_id+ " "+ v_id+ " "+ oneWay;
+                return "id:" + id + " osmid:"+osmid+" roadType:"+roadType+" name:"+ name +" u_id:"+ u_id+ " v_id"+ v_id+ " oneWay:"
+                        + oneWay +" greenery:"+greenness;
         }
 
         public void printEdgeT(){

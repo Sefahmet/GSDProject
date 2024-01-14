@@ -21,7 +21,7 @@ public class Weight {
     }
 
     public Weight(Double length_weight, Double slope_weight, Double max_speed_weight_weight, Double turning_cost_weight,Double greenary_weight) {
-        double sumWeights = length_weight + slope_weight + max_speed_weight_weight + turning_cost_weight+greenary_weight;
+        double sumWeights = length_weight + slope_weight + max_speed_weight_weight + turning_cost_weight + greenary_weight;
         if(length_weight + slope_weight + max_speed_weight_weight + greenary_weight == 0 && turning_cost_weight>0){
             this.length_weight = 0.0;
             this.slope_weight = 0.0;
@@ -45,5 +45,32 @@ public class Weight {
         }
 
     }
+    public boolean isSameWeight(Weight w){
+        if(!this.turning_cost_weight.equals(w.turning_cost_weight)){
 
+            return false;
+        }else if(!this.greenary_weight.equals(w.greenary_weight)){
+            return false;
+        }else if(!this.length_weight.equals(w.length_weight)){
+            return false;
+        }else if(!this.slope_weight.equals(w.slope_weight)){
+            return false;
+        }else if(!this.max_speed_weight_weight.equals(w.max_speed_weight_weight)){
+
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Weight{" +
+                "length_weight=" + length_weight +
+                ", slope_weight=" + slope_weight +
+                ", max_speed_weight_weight=" + max_speed_weight_weight +
+                ", turning_cost_weight=" + turning_cost_weight +
+                ", greenary_weight=" + greenary_weight +
+                '}';
+    }
 }
