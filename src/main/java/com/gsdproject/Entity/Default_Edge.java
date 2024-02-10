@@ -1,6 +1,7 @@
 package com.gsdproject.Entity;
 
 import com.gsdproject.Model.EdgeCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,10 +27,11 @@ public class Default_Edge extends DefaultWeightedEdge {
         @Getter @Setter private Double  distance;
         @Getter @Setter private Double  slope;
         @Getter @Setter private Double  greenness;
+        @Getter @Setter private Double greeneryFromSat;
 
 
         public Default_Edge(int fid, Long osmid,String roadType, String name, Long u_id, Long v_id, Default_Node u,
-                            Default_Node v, boolean oneWay, Double maxSpeed, Double  distance,Double slope){
+                            Default_Node v, boolean oneWay, Double maxSpeed, Double  distance,Double slope,Double greeneryFromSat){
                 this.id = fid;
                 this.osmid = osmid;
                 this.roadType = roadType;
@@ -42,6 +44,7 @@ public class Default_Edge extends DefaultWeightedEdge {
                 this.maxSpeed = maxSpeed;
                 this.distance = distance;
                 this.slope = slope;
+                this.greeneryFromSat = greeneryFromSat;
 
 
         }
@@ -78,7 +81,7 @@ public class Default_Edge extends DefaultWeightedEdge {
                 // Sonuçları tutacak bir Map oluştur
                 Map<Default_Edge, Double> angles = new HashMap<>();
 
-                // Diğer kenarlar üzerinde dön
+                // Diğer kenarlar üzerinde döndür
                 for (Default_Edge edge : outgoings) {
                         // Diğer kenarın başlangıç ve bitiş koordinatları
                         double x3 = edge.v.getEast();
@@ -150,12 +153,9 @@ public class Default_Edge extends DefaultWeightedEdge {
         @Override
         public String toString() {
                 return "id:" + id + " osmid:"+osmid+" roadType:"+roadType+" name:"+ name +" u_id:"+ u_id+ " v_id"+ v_id+ " oneWay:"
-                        + oneWay +" greenery:"+greenness;
+                        + oneWay +" greenery:"+greenness +" greeneryFromSat:"+greeneryFromSat;
         }
 
-        public void printEdgeT(){
-                System.out.printf("| %-4d | %-10d | %-25s | %-14s | %-12d | %-12d | %-5b |%-10f |%-10f |%-10f |%n",
-                                       id, osmid, name, roadType, u_id, v_id, oneWay,maxSpeed,slope,distance);
-        }
+
 }
 

@@ -20,7 +20,7 @@
     cursor: pointer;
 }
 
-.slider {
+.slider-input {
     min-width: 100%;
 }
 
@@ -41,7 +41,7 @@
     }
   }
 
-.slider {
+.slider-input {
     width: calc(18% - 10px); /* Slayderları yan yana sığacak genişlikte ayarlayın */
     -webkit-appearance: none;
     height: 8px;
@@ -51,28 +51,28 @@
     transition: opacity .2s;
 }
 
-.slider#distanceRange {
+.slider-input#distanceRange {
     background: linear-gradient(90deg, rgba(222,196,244,1) 0%, rgba(179,136,215,1) 25%, rgba(130,82,172,1) 50%, rgba(94,50,131,1) 75%, rgba(59,27,87,1) 100%);
 }
-.slider#slopeRange {
+.slider-input#slopeRange {
     background: linear-gradient(90deg, rgba(214,255,251,1) 0%, rgba(116,222,211,1) 25%, rgba(64,224,208,1) 50%, rgba(15,185,168,1) 75%, rgba(11,124,112,1) 100%);
 }
-.slider#speedRange {
+.slider-input#speedRange {
     background: linear-gradient(90deg, rgba(241,188,157,1) 0%, rgba(238,160,115,1) 25%, rgba(241,97,14,1) 50%, rgba(217,79,0,1) 75%, rgba(142,53,2,1) 100%);
 }
-.slider#turningCostRange {
+.slider-input#turningCostRange {
     background: linear-gradient(90deg, rgba(237,178,190,1) 0%, rgba(246,140,161,1) 25%, rgba(251,96,127,1) 50%, rgba(246,26,70,1) 75%, rgba(117,0,23,1) 100%);
 }
-.slider#greenaryRange {
+.slider-input#greenaryRange {
     background: linear-gradient(90deg, rgba(255,254,223,1) 0%, rgba(249,246,163,1) 25%, rgba(252,247,94,1) 50%, rgba(232,226,48,1) 75%, rgba(170,164,0,1) 100%);
 }
 
-.slider:hover {
+.slider-input:hover {
     opacity: 1;
 }
 
 
-.slider::-webkit-slider-thumb {
+.slider-input::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 45px;
@@ -82,15 +82,98 @@
     cursor: pointer;
 }
 
-.slider::-webkit-slider-thumb:hover {
+.slider-input::-webkit-slider-thumb:hover {
     width: 50px;
     height: 50px;
 }
 
-.slider::-moz-range-thumb {
+.slider-input::-moz-range-thumb {
     width: 150px;
     height: 150px;
     background: url('slider-thumb.png') center center no-repeat;
     background-size: cover;
     cursor: pointer;
+}
+
+.label {
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.switch,
+.input:checked + .label .left,
+.input:not(:checked) + .label .right {
+    pointer-events: all;
+    cursor: pointer;
+}
+
+/* most of the stuff below is the same as the W3Schools stuff,
+but modified a bit to reflect changed HTML structure */
+
+.input {
+    display: none;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+}
+
+input:checked + .label .slider {
+    background-color: #2196f3;
+}
+
+input:focus + .label .slider {
+    box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .label .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* styling to make it look like your screenshot */
+
+.left, .right {
+    margin: 0 .5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-family: sans-serif;
+    font-size: 20px;
 }

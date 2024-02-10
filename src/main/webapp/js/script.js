@@ -5,6 +5,10 @@
  var marker2;
  var line;
  let counter = 0;
+ let greeneryMethod = "Coordinates"
+ //var server = "131.220.71.188";
+ var server = "localhost";
+ var port = "8080";
 
  var leftBottom =  ol.proj.transform([7.0390799173829555,  50.6616799499222], "EPSG:4326", "EPSG:3857");
  var rightTop = ol.proj.transform([7.172951,   50.78453], "EPSG:4326", "EPSG:3857");
@@ -98,7 +102,6 @@ map.on("click", function (e) {
     });
 
   function findShortestPath() {
-    console.log("this function is findShortestPath version 2")
 
     var coord1 = coord1Input.value.split(",");
     var coord2 = coord2Input.value.split(",");
@@ -106,10 +109,6 @@ map.on("click", function (e) {
     var lon1 = parseFloat(coord1[0]);
     var lat2 = parseFloat(coord2[1]);
     var lon2 = parseFloat(coord2[0]);
-      console.log(lat1,
-                  lon1,
-                  lat2,
-                  lon2)
 
       wLength = weights.wLength
       wSlope = weights.wSlope
@@ -119,8 +118,11 @@ map.on("click", function (e) {
 
 
 
-
-      const url = `http://131.220.71.188:8080/masterproject/Effortless/Coordinates?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}&wLength=${wLength}&wSlope=${wSlope}&wMaxSpeed=${wMaxSpeed}&wTurnLeft=${wTurnLeft}&wGreenary=${wGreenary}`;     console.log(url)
+      let NDVIBased = "CoordinatesGreeneryFromSat";
+      let VisBased =  "Coordinates";
+    
+  
+      const url = "http://"+server +":"+ port+"/masterproject/Effortless/"+greeneryMethod+`?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}&wLength=${wLength}&wSlope=${wSlope}&wMaxSpeed=${wMaxSpeed}&wTurnLeft=${wTurnLeft}&wGreenary=${wGreenary}`;
     fetch(url)
             .then(response => {
               if (response.ok) {
@@ -131,11 +133,9 @@ map.on("click", function (e) {
             })
             .then(data => {
 
-              console.log('Server respond:', data);
               drawPath(data);
             })
             .catch(error => {
-              console.error('Connection is unsuccessful.', error);
             });
   }
 
@@ -152,10 +152,8 @@ map.on("click", function (e) {
 
 
     }
-    console.log("pushed points", points);
 
     var lineString = new ol.geom.LineString(points);
-      console.log("linestring", lineString);
     var lineFeature = new ol.Feature({
       geometry: lineString
     });
@@ -176,9 +174,7 @@ map.on("click", function (e) {
     line = new ol.layer.Vector({
       source: vectorSource
     });
-      console.log(line);
     map.addLayer(line);
-    console.log("line added");
   }
  var range_el = document.querySelector('input[type=range]');
 
@@ -191,9 +187,17 @@ map.on("click", function (e) {
      weights.wMaxSpeed = document.getElementById("speedRange").value;
      weights.wTurnLeft = document.getElementById("turningCostRange").value;
      weights.wGreenary = document.getElementById("greenaryRange").value;
+     console.log(weights.wLength,weights.wSlope,weights.wMaxSpeed,weights.wTurnLeft,weights.wGreenary);
+
  }
  document.getElementById("distanceRange").addEventListener("input", handleSliderChange);
  document.getElementById("slopeRange").addEventListener("input", handleSliderChange);
  document.getElementById("speedRange").addEventListener("input", handleSliderChange);
  document.getElementById("turningCostRange").addEventListener("input", handleSliderChange);
  document.getElementById("greenaryRange").addEventListener("input", handleSliderChange);
+
+ document.getElementById('toggleBtn').addEventListener('change', function(e) {
+         greeneryMethod = e.target.checked ? "CoordinatesGreeneryFromSat" : "Coordinates";
+
+     }
+ );

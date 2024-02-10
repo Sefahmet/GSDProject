@@ -32,7 +32,7 @@ public class WeightedShortestPathController {
         Coordinate p1 = new Coordinate(lat1, lon1);
         Coordinate p2 = new Coordinate(lat2, lon2);
         List<Coordinate> coordinates = WeightedShortestPath.shortestPathService(lat1, lon1, lat2, lon2,
-                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary);
+                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary,false);
 
 
         coordinates.add(0,p1);
@@ -47,6 +47,37 @@ public class WeightedShortestPathController {
         }
 
         }
+
+
+
+    @GetMapping("/CoordinatesGreeneryFromSat")
+    public ResponseEntity<List<Coordinate>> shortestPathGetterGreeneryFromSat(@Valid @RequestParam double lat1,
+                                                               @Valid @RequestParam double lon1,
+                                                               @Valid @RequestParam double lat2,
+                                                               @Valid @RequestParam double lon2,
+                                                               @Valid @RequestParam double wLength,
+                                                               @Valid @RequestParam double wSlope,
+                                                               @Valid @RequestParam double wMaxSpeed,
+                                                               @Valid @RequestParam double wTurnLeft,
+                                                               @Valid @RequestParam double wGreenary)  {
+        Coordinate p1 = new Coordinate(lat1, lon1);
+        Coordinate p2 = new Coordinate(lat2, lon2);
+        List<Coordinate> coordinates = WeightedShortestPath.shortestPathService(lat1, lon1, lat2, lon2,
+                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary,true);
+
+
+        coordinates.add(0,p1);
+        coordinates.add(p2);
+
+
+
+        if (coordinates!=null){
+            return new ResponseEntity(coordinates, HttpStatus.OK);
+        }else{
+            return new ResponseEntity("CoordinatesCouldntFind", HttpStatus.BAD_REQUEST);
+        }
+
+    }
     @GetMapping("/Greenery")
 
     public ResponseEntity<List<Default_Edge>> greeneryPathGetter(@Valid @RequestParam double lat1,
@@ -61,7 +92,7 @@ public class WeightedShortestPathController {
         Coordinate p1 = new Coordinate(lat1, lon1);
         Coordinate p2 = new Coordinate(lat2, lon2);
         List<Coordinate> coordinates = WeightedShortestPath.shortestPathReturnsEdge(lat1, lon1, lat2, lon2,
-                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary);
+                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary,false);
 
 
 
@@ -73,20 +104,22 @@ public class WeightedShortestPathController {
         }
 
     }
-    @GetMapping("/CoordinatesTest")
-    public ResponseEntity<List<Coordinate>> shortestPathGetterTest() {
-        Double lat1 = 7.1078218;
-        Double lon1 = 50.7314816;
-        Double lat2 =  7.1002560;
-        Double lon2 = 50.7271996;
+    @GetMapping("/GreenerySat")
+
+    public ResponseEntity<List<Default_Edge>> greeneryPathGetterSat(@Valid @RequestParam double lat1,
+                                                                 @Valid @RequestParam double lon1,
+                                                                 @Valid @RequestParam double lat2,
+                                                                 @Valid @RequestParam double lon2,
+                                                                 @Valid @RequestParam double wLength,
+                                                                 @Valid @RequestParam double wSlope,
+                                                                 @Valid @RequestParam double wMaxSpeed,
+                                                                 @Valid @RequestParam double wTurnLeft,
+                                                                 @Valid @RequestParam double wGreenary)  {
         Coordinate p1 = new Coordinate(lat1, lon1);
         Coordinate p2 = new Coordinate(lat2, lon2);
-        List<Coordinate> coordinates = WeightedShortestPath.shortestPathService(lat1, lon1, lat2, lon2,
-                0, 0, 0, 0,0);
+        List<Coordinate> coordinates = WeightedShortestPath.shortestPathReturnsEdge(lat1, lon1, lat2, lon2,
+                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary,true);
 
-
-        coordinates.add(0,p1);
-        coordinates.add(p2);
 
 
 
@@ -97,30 +130,5 @@ public class WeightedShortestPathController {
         }
 
     }
-    @GetMapping("/osmids")
-    public ResponseEntity<List<String>> osmidsGetter( @RequestParam double lat1,
-                                                               @RequestParam double lon1,
-                                                               @RequestParam double lat2,
-                                                               @RequestParam double lon2,
-                                                               @RequestParam double wLength,
-                                                               @RequestParam double wSlope,
-                                                               @RequestParam double wMaxSpeed,
-                                                               @RequestParam double wTurnLeft,
-                                                               @RequestParam double wGreenary) throws IOException {
 
-        Coordinate p1 = new Coordinate(lat1, lon1);
-        Coordinate p2 = new Coordinate(lat2, lon2);
-        List<String> coordinates = WeightedShortestPath.shortestPathServiceOSMID(lat1, lon1, lat2, lon2,
-                wLength, wSlope, wMaxSpeed, wTurnLeft,wGreenary);
-
-
-
-
-        if (coordinates!=null){
-            return new ResponseEntity(coordinates, HttpStatus.OK);
-        }else{
-            return new ResponseEntity("CoordinatesCouldn'tFind", HttpStatus.BAD_REQUEST);
-        }
-
-    }
     }

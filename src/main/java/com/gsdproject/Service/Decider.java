@@ -36,7 +36,10 @@ public class Decider {
     public static Double greeneryDecider(Double greenary){
         if(greenary<=0){
             return 1.0;
-        }else {
+        }else if (greenary>500){
+            return 0.0;
+        }
+        else {
             double f = Math.exp( -k* greenary/555)-Math.exp(-k);
             double normalizationValue = 1 - Math.exp(-k);
             return f/normalizationValue;

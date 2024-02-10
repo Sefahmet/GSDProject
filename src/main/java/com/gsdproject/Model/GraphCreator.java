@@ -4,7 +4,7 @@ import com.gsdproject.Entity.GraphFeatures;
 import com.gsdproject.Service.Reader;
 
 public class GraphCreator {
-    public static GraphFeatures getGraphFeatrues() throws Exception {
+    public static GraphFeatures getGraphFeatrues()  {
         GraphFeatures graphFeatures = Reader.readTheDefaultFiles();
 
 

@@ -1,6 +1,5 @@
 package com.gsdproject.Service;
 
-import com.gsdproject.DataHolder.MyDataSingleton;
 import com.gsdproject.Entity.*;
 import geotrellis.proj4.CRS;
 import geotrellis.proj4.Transform;
@@ -13,6 +12,7 @@ import org.locationtech.jts.geom.CoordinateList;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,24 +27,32 @@ public class WeightedShortestPath {
                                                                             double wSlope,
                                                                             double wMaxSpeed,
                                                                             double wTurnLeft,
-                                                                            double wGreenary){
+                                                                            double wGreenary,
+                                                                            boolean isGreeneryFromSat){
 
-        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary);
-        MyDataSingleton myDataSingleton = new MyDataSingleton();
-        if (!myDataSingleton.getWeight().isSameWeight(weight)){
-            myDataSingleton.setWeight(weight);
-            myDataSingleton.update();
-            GraphFeatures graphFeature = updateGraphFeatures(myDataSingleton.getGraphFeatures(), weight);
-            myDataSingleton.setGraphFeatures(graphFeature);
+        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary,isGreeneryFromSat);
+        System.out.println(weight);
+        Weight previousWeight = Weight.getInstance();
+        System.out.println(previousWeight);
+
+        if (!previousWeight.isSameWeight(weight)){
+            System.out.println("changed");
+            System.out.println(previousWeight);
+            System.out.println(weight);
+            Weight.setInstance(weight);
+            GraphFeatures graphFeature = updateGraphFeatures(GraphFeatures.getInstance(), weight);
+            GraphFeatures.setInstance(graphFeature);
         }
 
         Coordinate p1 = LatLon2EN(lon1, lat1);
         Coordinate p2 = LatLon2EN(lon2, lat2);
-        GraphPath<Default_Edge, CreatedEdge> shoretesPath = getShortestPath(p1, p2);
+        GraphPath<Default_Edge, CreatedEdge> shortestPath = getShortestPath(p1, p2);
 
 
-        return shortestPath2Coordinate(shoretesPath);
+        return shortestPath2Coordinate(shortestPath);
     }
+
+
     public static List<Coordinate> shortestPathReturnsEdge( double lat1,
                                                         double lon1,
                                                         double lat2,
@@ -53,54 +61,34 @@ public class WeightedShortestPath {
                                                         double wSlope,
                                                         double wMaxSpeed,
                                                         double wTurnLeft,
-                                                        double wGreenary){
+                                                        double wGreenary,
+                                                            boolean isGreeneryFromSat)  {
 
-        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary);
-        MyDataSingleton myDataSingleton = new MyDataSingleton();
-        if (!myDataSingleton.getWeight().isSameWeight(weight)){
-            myDataSingleton.getWeight().setInstance(weight);
-            GraphFeatures graphFeature = updateGraphFeatures(myDataSingleton.getGraphFeatures(), weight);
-            myDataSingleton.setGraphFeatures(graphFeature);
+        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary,isGreeneryFromSat);
+        Weight previousWeight = Weight.getInstance();
+        if (!previousWeight.isSameWeight(weight)){
+            System.out.println(previousWeight);
+            System.out.println(weight);
+
+            Weight.setInstance(weight);
+            GraphFeatures graphFeature = updateGraphFeatures(GraphFeatures.getInstance(), weight);
+            GraphFeatures.setInstance(graphFeature);
+
         }
 
         Coordinate p1 = LatLon2EN(lon1, lat1);
         Coordinate p2 = LatLon2EN(lon2, lat2);
         GraphPath<Default_Edge, CreatedEdge> shortestPath = getShortestPath(p1, p2);
-        return shortestPath2CoordinateAndGreenery(shortestPath);
+        if(shortestPath != null){
+
+            return shortestPath2CoordinateAndGreenery(shortestPath);
+        }
+        return null;
 
 
     }
-    public static List<String>  shortestPathServiceOSMID( double lat1,
-                                                        double lon1,
-                                                        double lat2,
-                                                        double lon2,
-                                                        double wLength,
-                                                        double wSlope,
-                                                        double wMaxSpeed,
-                                                        double wTurnLeft,double wGreenary){
-
-        Weight weight = new Weight(wLength,wSlope,wMaxSpeed,wTurnLeft,wGreenary);
-        MyDataSingleton myDataSingleton = new MyDataSingleton();
-        if (weight != myDataSingleton.getWeight()){
-            myDataSingleton.setWeight(weight);
-            myDataSingleton.update();
-            GraphFeatures graphFeature = updateGraphFeatures(myDataSingleton.getGraphFeatures(), weight);
-            myDataSingleton.setGraphFeatures(graphFeature);
-        }
-
-        Coordinate p1 = LatLon2EN(lon1, lat1);
-        Coordinate p2 = LatLon2EN(lon2, lat2);
-        GraphPath<Default_Edge, CreatedEdge> shortestPath = getShortestPath(p1, p2);
-        List<String> osmids = new ArrayList<>();
-        for (Default_Edge edge:shortestPath.getVertexList()){
-            if(edge.getOsmid() != null) {
-                osmids.add(String.valueOf(edge.getOsmid()));
-            }
-        }
-        return osmids;
-    }
-    private static List<Coordinate> shortestPath2Coordinate(GraphPath<Default_Edge, CreatedEdge> shoretesPath){
-        List<Default_Edge> edges = shoretesPath.getVertexList();
+    private static List<Coordinate> shortestPath2Coordinate(GraphPath<Default_Edge, CreatedEdge> shortestPath){
+        List<Default_Edge> edges = shortestPath.getVertexList();
         List<Coordinate> coordinates = new ArrayList<>();
         if (edges.size()>1) {
             Double x;
@@ -113,7 +101,7 @@ public class WeightedShortestPath {
                 coordinate = EN2LatLon(x, y);
                 coordinates.add(coordinate);
             }
-            Default_Edge lastEdge = edges.get(coordinates.size() - 2);
+            Default_Edge lastEdge = edges.get(edges.size() - 2);
             x = lastEdge.getV().getEast();
             y = lastEdge.getV().getNorth();
             coordinate = EN2LatLon(x, y);
@@ -124,9 +112,11 @@ public class WeightedShortestPath {
             return null;
         }
     }
-    private static List<Coordinate> shortestPath2CoordinateAndGreenery(GraphPath<Default_Edge, CreatedEdge> shoretesPath){
+    private static List<Coordinate> shortestPath2CoordinateAndGreenery(GraphPath<Default_Edge, CreatedEdge> shoretesPath)  {
         List<Default_Edge> edges = shoretesPath.getVertexList();
         List<Coordinate> coordinates = new ArrayList<>();
+        boolean isGreeneryFromSat=false;
+        isGreeneryFromSat = Weight.getInstance().getIsGreeneryFromSat();
         if (edges.size()>1) {
             Double x;
             Double y;
@@ -136,11 +126,16 @@ public class WeightedShortestPath {
                 x = edge.getU().getEast();
                 y = edge.getU().getNorth();
                 coordinate = EN2LatLon(x, y);
-                coordinate.z = Decider.greeneryDecider(edge.getGreenness());
+
+                if(isGreeneryFromSat) {
+                    coordinate.z = 1 - edge.getGreeneryFromSat();
+                }else{
+                    coordinate.z  =Decider.greeneryDecider(edge.getGreenness());
+                }
                 coordinates.add(coordinate);
 
             }
-            Default_Edge lastEdge = edges.get(coordinates.size() - 2);
+            Default_Edge lastEdge = edges.get(edges.size() - 2);
             x = lastEdge.getV().getEast();
             y = lastEdge.getV().getNorth();
             coordinate = EN2LatLon(x, y);
@@ -154,7 +149,6 @@ public class WeightedShortestPath {
     }
     public static GraphPath<Default_Edge, CreatedEdge> getShortestPath(Coordinate startPoint, Coordinate endPoint){
 
-        MyDataSingleton myDataSingleton = new MyDataSingleton();
         List<Default_Node> startAndEnd = getClosestNode(startPoint,endPoint);
         List<List<Default_Edge>> inAndExitEdges = getInAndExitEdges(startAndEnd);
         Default_Edge startEdge = new Default_Edge(1000000);

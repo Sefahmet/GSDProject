@@ -30,88 +30,88 @@ public class Reader {
     }
 
 
-    public static GraphFeatures readTheDefaultFiles() throws Exception {
+    public static GraphFeatures readTheDefaultFiles()  {
+            try {
+                HashMap<Long, Default_Node> nodes = readNodeGeoJSON(path + "/nodes.geojson");
 
-            HashMap<Long, Default_Node> nodes = readNodeGeoJSON(path+"/nodes.geojson");
+                File nodeElevFile = new File(path + "/nodesElev.txt");
+                if (nodeElevFile.exists()) {
+                    setNodesElev(path + "/nodesElev.txt", nodes);
+                } else {
+                    Map<String, List<Default_Node>> subsetNodes = Reader.getSubsetNodes(nodes);
+                    Reader.setElevationOfNodes(subsetNodes);
 
-             File  nodeElevFile = new File(path + "/nodesElev.txt");
-             if(nodeElevFile.exists()){
-                 setNodesElev(path+ "/nodesElev.txt",nodes);
-             }else{
-                 Map<String, List<Default_Node>> subsetNodes = Reader.getSubsetNodes(nodes);
-                 Reader.setElevationOfNodes(subsetNodes);
-
-                 writeNodeElevFile(path,nodes);
-             }
-
-
-
-            HashMap<String, Default_Edge> edges = readEdgeGeoJSON(path + "/edges.geojson", nodes);
-
-            GraphFeatures graphFeatures = new GraphFeatures();
-            graphFeatures.setEdgeHashMap(edges);
-            graphFeatures.setNodeHashMap(nodes);
-            HashMap<String, CreatedEdge> createdEdgeHashMap = new HashMap<>();
-
-            File  file = new File(path + "/createdEdge.txt");
-            System.out.println(file.getPath());
-            boolean flag;
-
-            if(file.exists()){
-                createdEdgeHashMap = createCreatedEdges(createdEdgeHashMap,edges);
+                    writeNodeElevFile(path, nodes);
+                }
 
 
-            }else{
-                int i = 0;
-                int size = edges.size();
-                int d = 0;
-                for(Default_Edge edge1:edges.values()){
-                    flag=false;
-                    Double s = i*100.0/size;
-                    i++;
+                HashMap<String, Default_Edge> edges = readEdgeGeoJSON(path + "/edgesWsat.geojson", nodes);
 
-                    if(s.intValue() >= d){
-                        System.out.println(d +"%  completed");
-                        d += 5;
+                GraphFeatures graphFeatures = new GraphFeatures();
+                graphFeatures.setEdgeHashMap(edges);
+                graphFeatures.setNodeHashMap(nodes);
+                HashMap<String, CreatedEdge> createdEdgeHashMap = new HashMap<>();
 
-                    }
-                    List<Default_Edge> outgoings= new ArrayList<>();
-                    List<Default_Edge> incomings= new ArrayList<>();
-                    for(Default_Edge edge2:edges.values()){
-                        if (edge1.getId()!=edge2.getId()){
-                            if(edge1.getV()==edge2.getU()){
-                                outgoings.add(edge2);
-                                flag = true;
-                            }
-                            if(edge1.getV()==edge2.getV()){
-                                incomings.add(edge2);
+                File file = new File(path + "/createdEdge.txt");
+                boolean flag;
+
+                if (file.exists()) {
+                    createdEdgeHashMap = createCreatedEdges(createdEdgeHashMap, edges);
+
+
+                } else {
+                    int i = 0;
+                    int size = edges.size();
+                    int d = 0;
+                    for (Default_Edge edge1 : edges.values()) {
+                        flag = false;
+                        Double s = i * 100.0 / size;
+                        i++;
+
+                        if (s.intValue() >= d) {
+                            System.out.println(d + "%  completed");
+                            d += 5;
+
+                        }
+                        List<Default_Edge> outgoings = new ArrayList<>();
+                        List<Default_Edge> incomings = new ArrayList<>();
+                        for (Default_Edge edge2 : edges.values()) {
+                            if (edge1.getId() != edge2.getId()) {
+                                if (edge1.getV() == edge2.getU()) {
+                                    outgoings.add(edge2);
+                                    flag = true;
+                                }
+                                if (edge1.getV() == edge2.getV()) {
+                                    incomings.add(edge2);
+                                }
                             }
                         }
-                    }
-                    // if there is any outgoing edge, it means edge1 to edge 2 is a usable way
-                    if(flag) {
-                        createdEdgeHashMap = EdgeCreator.isItTurnLeft(edge1, outgoings, incomings, createdEdgeHashMap);
-                    }
+                        // if there is any outgoing edge, it means edge1 to edge 2 is a usable way
+                        if (flag) {
+                            createdEdgeHashMap = EdgeCreator.isItTurnLeft(edge1, outgoings, incomings, createdEdgeHashMap);
+                        }
 
 
+                    }
+                    createdEdgeWriter(createdEdgeHashMap);
 
                 }
-                createdEdgeWriter(createdEdgeHashMap);
 
+
+                setGreenaryValues(edges);
+
+                graphFeatures.setCreatedEdgesHashMap(createdEdgeHashMap);
+
+
+                Graph<Default_Edge, DefaultWeightedEdge> graph = createGraph(edges.values(), createdEdgeHashMap.values());
+                graphFeatures.setGraph(graph);
+                System.out.println("Graph Created, Program Ready for Running");
+
+                return graphFeatures;
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
-
-            setGreenaryValues(edges);
-
-            graphFeatures.setCreatedEdgesHashMap(createdEdgeHashMap);
-
-
-            Graph<Default_Edge, DefaultWeightedEdge> graph = createGraph(edges.values(), createdEdgeHashMap.values());
-            graphFeatures.setGraph(graph);
-            System.out.println("Graph Created, Program Ready for Running");
-
-            return graphFeatures;
-
+            return null;
         }
         private static void setGreenaryValues(HashMap<String, Default_Edge> edgeHashmap){
         try{
@@ -189,6 +189,11 @@ public class Reader {
                 int i = 0;
                 while (jsonEdge.get("features").get(i)!=null){
                     JsonNode feature = jsonEdge.get("features").get(i);
+                    Iterator<String> iterator = feature.get("properties").fieldNames();
+                    while (iterator.hasNext()){
+                        String val = iterator.next();
+
+                    }
                     if(feature.get("properties").get("fid") != null){
                         id = feature.get("properties").get("fid").asInt();
                     }
@@ -214,12 +219,14 @@ public class Reader {
                     Double length = feature.get("properties").get("length").asDouble();
                     Double slope = Decider.slopeDecider((v.getElevation()-u.getElevation())/length);
 
-                    Default_Edge edge = new Default_Edge(id,osmid,roadType,name,u_id,v_id,u,v,oneWay,maxSpeedWeight,length,slope);
+                    Double greenerySAT = feature.get("properties").get("normalized_mean_ndvi").asDouble();
+
+                    Default_Edge edge = new Default_Edge(id,osmid,roadType,name,u_id,v_id,u,v,oneWay,maxSpeedWeight,length,slope,greenerySAT);
                     edgeHashMap.put(u_id +" "+v_id,edge);
                     if(!oneWay){
                         slope = Decider.slopeDecider((u.getElevation()-v.getElevation())/length);
 
-                        edge = new Default_Edge(id,osmid,roadType,name,v_id,u_id,v,u,false,maxSpeedWeight,length,slope);
+                        edge = new Default_Edge(id,osmid,roadType,name,v_id,u_id,v,u,false,maxSpeedWeight,length,slope,greenerySAT);
                         edgeHashMap.put(v_id +" "+u_id,edge);
 
                     }
@@ -380,15 +387,20 @@ public class Reader {
             Double distance = edge.getDistance(); // Distance as meter (weight)
             Double slope = edge.getSlope();  // Normalized slope weight
             Double turnLeft = Decider.turningCostDecider(createdEdge.getTurningCost()); // weight of turning cost
-            Double greenary = Decider.greeneryDecider(edge.getGreenness());
+            Double greenery;
+            if(weight.getIsGreeneryFromSat()) {
+                greenery = 1 - edge.getGreeneryFromSat(); // More Green Less Weight
+            }else{
+                greenery = Decider.greeneryDecider(edge.getGreenness());
+            }
             // Weight of user selections
             Double wDistance = weight.getLength_weight();
-            Double wMaxSpeed = weight.getMax_speed_weight_weight();
+            Double wMaxSpeed = weight.getMax_speed_weight();
             Double wSlope = weight.getSlope_weight();
             Double wTurnLeft =  weight.getTurning_cost_weight();
-            Double wGreenary =  weight.getGreenary_weight();
+            Double wGreenery =  weight.getGreenary_weight();
 
-            Double combinedWeight = distance *(wDistance+ wMaxSpeed*maxSpeed+ wSlope * slope+ wGreenary * greenary) + turnLeft*wTurnLeft;
+            Double combinedWeight = distance *(wDistance+ wMaxSpeed*maxSpeed+ wSlope * slope+ wGreenery * greenery) + turnLeft*wTurnLeft;
 
             return combinedWeight;
 
@@ -456,7 +468,6 @@ public class Reader {
         try {
             String fileName = "/createdEdge.txt";
             File file = new File(path+fileName);
-            System.out.println(file.getPath());
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 
             for (String key : createdEdgeHashMap.keySet()) {

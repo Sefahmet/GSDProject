@@ -16,7 +16,7 @@ public class GraphFeatures {
     @Getter @Setter private HashMap<String, CreatedEdge> createdEdgesHashMap;
     @Setter private static GraphFeatures instance;
 
-    public static GraphFeatures getInstance() throws Exception {
+    public static GraphFeatures getInstance()  {
         if (instance == null){
             System.out.println("\n\nFiles Readed\n\n");
             instance = getGraphFeatrues();

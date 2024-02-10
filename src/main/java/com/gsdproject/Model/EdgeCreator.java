@@ -91,7 +91,7 @@ public class EdgeCreator {
         }catch (Exception e){
             e.printStackTrace();
         }
-        throw new Exception("edge couldnt create");
+        throw new Exception("edge couldn't create");
     }
 
 }

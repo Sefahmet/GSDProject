@@ -24,6 +24,13 @@ public class Test {
     static final Double visibilityDistance = 200.0;
     static final Double visibleAngle = 150.0;
     static final String path;
+
+
+
+
+
+
+
     static {
         try {
             path = new ClassPathResource("static/").getFile().getPath();
@@ -66,6 +73,9 @@ public class Test {
     }
 
     public static void main(String[] args) throws Exception {
+
+    }
+    public static void createCreatedEdge() throws Exception {
         GraphFeatures graphFeatures = GraphFeatures.getInstance();
         HashMap<String, CreatedEdge> createdEdgesHashMap = graphFeatures.getCreatedEdgesHashMap();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("directionalInfo.txt"))) {
@@ -74,6 +84,7 @@ public class Test {
                      "wLength","wSlope","wMaxSpeed","wTurningCost","wgreenery", "treeCount",
                     "justLength","justSlope","justMaxSpeed","justTurningCost","justGreenery","justEqual","geometry"));
             GeometryFactory geometryFactory = new GeometryFactory();
+            boolean isGreeneryFromSat = false;
             for(CreatedEdge createdEdge : createdEdgesHashMap.values()) {
                 Default_Edge inc = createdEdge.getIncomingEdge();
                 Default_Edge out = createdEdge.getOutgoingEdge();
@@ -89,12 +100,12 @@ public class Test {
                 Double treeCount = inc.getGreenness();
                 Double wgreenery = Decider.greeneryDecider(treeCount);
 
-                Weight weightLength = new Weight(1.0, 0.0, 0.0, 0.0, 0.0);
-                Weight weightSlope = new Weight(0.0, 1.0, 0.0, 0.0, 0.0);
-                Weight weightMaxSpeed = new Weight(0.0, 0.0, 1.0, 0.0, 0.0);
-                Weight weightTurningCost = new Weight(0.0, 0.0, 0.0, 1.0, 0.0);
-                Weight weightgreenery = new Weight(0.0, 0.0, 0.0, 0.0, 1.0);
-                Weight weightEqual = new Weight(1.0, 1.0, 1.0, 1.0, 1.0);
+                Weight weightLength = new Weight(1.0, 0.0, 0.0, 0.0, 0.0,isGreeneryFromSat);
+                Weight weightSlope = new Weight(0.0, 1.0, 0.0, 0.0, 0.0,isGreeneryFromSat);
+                Weight weightMaxSpeed = new Weight(0.0, 0.0, 1.0, 0.0, 0.0,isGreeneryFromSat);
+                Weight weightTurningCost = new Weight(0.0, 0.0, 0.0, 1.0, 0.0,isGreeneryFromSat);
+                Weight weightgreenery = new Weight(0.0, 0.0, 0.0, 0.0, 1.0,isGreeneryFromSat);
+                Weight weightEqual = new Weight(1.0, 1.0, 1.0, 1.0, 1.0,isGreeneryFromSat);
                 Coordinate p3 = getInterPoint4DirectedEdge(p1,p2);
                 LineString directedLine = geometryFactory.createLineString(new Coordinate[]{p1, p3});
 
