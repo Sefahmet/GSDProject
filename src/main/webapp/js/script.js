@@ -6,8 +6,8 @@
  var line;
  let counter = 0;
  let greeneryMethod = "Coordinates"
- //var server = "131.220.71.188";
- var server = "localhost";
+ var server = "131.220.71.188";
+ //var server = "localhost";
  var port = "8080";
 
  var leftBottom =  ol.proj.transform([7.0390799173829555,  50.6616799499222], "EPSG:4326", "EPSG:3857");
@@ -77,6 +77,10 @@ const marker2Icon =
   });
 marker2.setStyle(marker2Icon);
 map.on("click", function (e) {
+      if (line) {
+          map.removeLayer(line);
+      }
+
       var position = ol.proj.toLonLat(e.coordinate);
       if (counter%2 === 0) {
         marker1.getGeometry().setCoordinates(e.coordinate);
@@ -187,7 +191,6 @@ map.on("click", function (e) {
      weights.wMaxSpeed = document.getElementById("speedRange").value;
      weights.wTurnLeft = document.getElementById("turningCostRange").value;
      weights.wGreenary = document.getElementById("greenaryRange").value;
-     console.log(weights.wLength,weights.wSlope,weights.wMaxSpeed,weights.wTurnLeft,weights.wGreenary);
 
  }
  document.getElementById("distanceRange").addEventListener("input", handleSliderChange);
