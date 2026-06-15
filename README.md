@@ -374,29 +374,6 @@ The visited road network covered **994.5 km** out of Bonn's total **1,881 km** o
 
 ---
 
-## 🚀 Getting Started
-
-```bash
-git clone https://github.com/Sefahmet/GSDProject.git
-cd GSDProject
-pip install -r requirements.txt
-```
-
-Configure your data paths in `config.py`, then run the greenery preprocessing:
-
-```bash
-python greenery/visibility_analysis.py
-python greenery/ndvi_analysis.py
-```
-
-Build the weighted graph and run routing:
-
-```bash
-python routing/build_graph.py
-python routing/dijkstra.py --start <node_id> --end <node_id> --preferences "1,2,1,3,1"
-```
-
----
 
 ## 📚 References
 
