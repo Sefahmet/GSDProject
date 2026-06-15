@@ -1,12 +1,15 @@
-
+[README.md](https://github.com/user-attachments/files/28951832/README.md)
 # 🚴 Bikeability App — Considering Greenery and Effort by User Preferences
 
 > A cyclist-centric navigation application developed as a Master's Project at the **University of Bonn** (Institute of Geodesy and Geoinformation), 2024.
 
 **Authors:** Ahmet Sefa Altundal · Benoit Atayi · Julius Knechtel  
 **Supervisor:** Prof. Dr.-Ing. Jan Henrik Haunert  
+**Institution:** Institute of Geodesy and Geoinformation, University of Bonn  
 **Study Area:** Bonn, Germany  
+**Year:** 2024
 
+> **Note:** This repository is maintained by **Ahmet Sefa Altundal**. The project was developed collaboratively as part of the Master's programme at the University of Bonn.
 
 ---
 
@@ -78,9 +81,13 @@ Elevation data comes from a **1 m × 1 m Digital Elevation Model (DEM)**. Each g
 
 Slope weight is modeled as a piecewise function based on real cycling power data:
 
-$$W_{Slope} = \begin{cases} 0 & \text{if slope} \leq -3\% \\ S(x) & \text{if } -3\% < \text{slope} < 15\% \\ 1 & \text{if slope} \geq 15\% \end{cases}$$
+```
+W_Slope = 0        if slope ≤ -3%
+W_Slope = S(x)     if -3% < slope < 15%
+W_Slope = 1        if slope ≥ 15%
 
-$$S(x) = \frac{(x+3)^{\frac{1}{2}}}{18^{\frac{1}{2}}}$$
+where S(x) = sqrt(x + 3) / sqrt(18)
+```
 
 - Slopes ≤ −3% require no extra effort → weight = 0
 - Slopes ≥ 15% are considered very painful for all riders → weight = 1 (maximum penalty)
@@ -181,8 +188,6 @@ Build the weighted graph and run routing:
 python routing/build_graph.py
 python routing/dijkstra.py --start <node_id> --end <node_id> --preferences "1,2,1,3,1"
 ```
-
-Or use the [web application](https://geonet.igg.uni-bonn.de/masterproject/index.html) directly.
 
 ---
 
